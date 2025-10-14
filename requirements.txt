@@ -1,39 +1,39 @@
 # Flask Core
-Flask==3.0.0
-Flask-SQLAlchemy==3.1.1
-Flask-Login==0.6.3
-Flask-CORS==4.0.0
-Flask-JWT-Extended==4.6.0
-PyJWT==2.8.0
+Flask
+Flask-SQLAlchemy
+Flask-Login
+Flask-CORS
+Flask-JWT-Extended
+PyJWT
 
 # Database
-SQLAlchemy==2.0.23
-psycopg2-binary==2.9.9
+SQLAlchemy
+psycopg2-binary
 
 # Password & Security
-bcrypt==4.1.2
-python-dotenv==1.0.0
+bcrypt
+python-dotenv
 
 # File Handling
-PyPDF2==3.0.1
-openpyxl==3.1.2
-Pillow==10.1.0
+PyPDF2
+openpyxl
+Pillow
 
 # AI/OpenAI (Optional)
-openai==1.6.1
+openai
 
 # Date & Time
-python-dateutil==2.8.2
+python-dateutil
 
 # Email (Optional)
-Flask-Mail==0.9.1
+Flask-Mail
 
 # Development
-python-dotenv==1.0.0
+python-dotenv
 
 # Validation
-email-validator==2.1.0
+email-validator
 
 # Production Server
-gunicorn==21.2.0
+gunicorn
 
