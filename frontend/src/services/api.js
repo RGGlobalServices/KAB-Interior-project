@@ -83,5 +83,14 @@ export const discussionsAPI = {
   delete: (id) => api.delete(`/discussions/${id}`),
 };
 
+// AI Design Assistant API
+export const aiDesignAPI = {
+  analyzeProject: (projectId) => api.post(`/ai-design/analyze/${projectId}`),
+  generateColorPalette: (projectId, data) => api.post(`/ai-design/color-palette/${projectId}`, data),
+  getMaterialRecommendations: (projectId, data) => api.post(`/ai-design/material-recommendations/${projectId}`, data),
+  getCostEstimate: (projectId, data) => api.post(`/ai-design/cost-estimate/${projectId}`, data),
+  quickSuggestion: (question) => api.post('/ai-design/quick-suggestion', { question }),
+};
+
 export default api;
 

@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ProjectDetail from './pages/ProjectDetail';
 import AnnotationEditor from './pages/AnnotationEditor';
+import AIDesignAssistant from './pages/AIDesignAssistant';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -79,6 +80,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ProjectDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ai-design/:projectId"
+        element={
+          <ProtectedRoute>
+            <AIDesignAssistant />
           </ProtectedRoute>
         }
       />

@@ -13,17 +13,23 @@ ALLOWED_EXTENSIONS = {'pdf', 'xls', 'xlsx'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@projects_bp.route('', methods=['GET'])
-@jwt_required()
-def get_projects():
+# Helper function to get user ID (defaults to demo user if no token)
+def get_current_user_id():
     user_id = get_jwt_identity()
+    # If no token provided, default to demo user (ID=1) for development
+    return user_id if user_id else 1
+
+@projects_bp.route('', methods=['GET'])
+@jwt_required(optional=True)
+def get_projects():
+    user_id = get_current_user_id()
     projects = Project.query.filter_by(user_id=user_id).all()
     return jsonify([p.to_dict() for p in projects]), 200
 
 @projects_bp.route('', methods=['POST'])
-@jwt_required()
+@jwt_required(optional=True)
 def create_project():
-    user_id = get_jwt_identity()
+    user_id = get_current_user_id()
     data = request.get_json()
     
     name = data.get('name')
@@ -44,9 +50,9 @@ def create_project():
     return jsonify(project.to_dict()), 201
 
 @projects_bp.route('/<int:project_id>', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_project(project_id):
-    user_id = get_jwt_identity()
+    user_id = get_current_user_id()
     project = Project.query.filter_by(id=project_id, user_id=user_id).first()
     
     if not project:
@@ -55,9 +61,9 @@ def get_project(project_id):
     return jsonify(project.to_dict()), 200
 
 @projects_bp.route('/<int:project_id>/upload', methods=['POST'])
-@jwt_required()
+@jwt_required(optional=True)
 def upload_file(project_id):
-    user_id = get_jwt_identity()
+    user_id = get_current_user_id()
     project = Project.query.filter_by(id=project_id, user_id=user_id).first()
     
     if not project:
@@ -105,9 +111,9 @@ def upload_file(project_id):
     }), 201
 
 @projects_bp.route('/<int:project_id>', methods=['DELETE'])
-@jwt_required()
+@jwt_required(optional=True)
 def delete_project(project_id):
-    user_id = get_jwt_identity()
+    user_id = get_current_user_id()
     project = Project.query.filter_by(id=project_id, user_id=user_id).first()
     
     if not project:

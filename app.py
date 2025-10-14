@@ -3,7 +3,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 from dotenv import load_dotenv
 import os
 import bcrypt
-
+from extensions import db
 # Load environment variables
 load_dotenv()
 
@@ -14,7 +14,9 @@ app = Flask(__name__,
            static_url_path='')
 
 # Configuration
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
+# SECURITY UPDATE: Replaced the default secret with a clearly visible placeholder.
+# In production, this environment variable MUST be set.
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', '!!!-SET-SECRET-KEY-ENV-VAR-!!!')
 
 # Database URL - Railway provides DATABASE_URL with postgres:// which needs to be postgresql://
 database_url = os.getenv('DATABASE_URL', 'sqlite:///interior_design.db')
@@ -23,7 +25,9 @@ if database_url.startswith('postgres://'):
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'jwt-secret-key')
+# SECURITY UPDATE: Replaced the default JWT secret with a clearly visible placeholder.
+# In production, this environment variable MUST be set.
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', '!!!-SET-JWT-SECRET-KEY-ENV-VAR-!!!')
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
 
@@ -52,12 +56,14 @@ from routes.projects import projects_bp
 from routes.annotations import annotations_bp
 from routes.qa import qa_bp
 from routes.discussions import discussions_bp
+from routes.ai_design import ai_design_bp
 
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(projects_bp, url_prefix='/api/projects')
 app.register_blueprint(annotations_bp, url_prefix='/api/annotations')
 app.register_blueprint(qa_bp, url_prefix='/api/qa')
 app.register_blueprint(discussions_bp, url_prefix='/api/discussions')
+app.register_blueprint(ai_design_bp, url_prefix='/api/ai-design')
 
 # Serve uploaded files
 @app.route('/static/uploads/<path:filename>')
@@ -102,13 +108,25 @@ def file_too_large(e):
     # This ensures a clean JSON response for file size errors
     return jsonify(error="File is larger than the maximum allowed size (50MB)."), 413
 
+# JWT error handlers
+@jwt.expired_token_loader
+def expired_token_callback(jwt_header, jwt_payload):
+    return jsonify(error='Token has expired', message='Please log in again'), 401
+
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    return jsonify(error='Invalid token', message='Please log in again'), 422
+
+@jwt.unauthorized_loader
+def missing_token_callback(error):
+    return jsonify(error='Missing authorization token', message='Please log in'), 401
+
 # Create database tables
 with app.app_context():
     db.create_all()
     
     # Create demo user if not exists
-    # Removed: 'from models import User' since it's now imported above
-    # import bcrypt # Moved to top-level imports
+    # Removed redundant comments: 'from models import User' since it's now imported above and 'import bcrypt' since it's a top-level import
     
     demo_user = User.query.filter_by(email='demo@example.com').first()
     if not demo_user:

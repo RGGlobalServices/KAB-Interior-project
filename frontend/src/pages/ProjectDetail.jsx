@@ -539,21 +539,52 @@ const ProjectDetail = () => {
         {/* AI Assistant Tab */}
         {activeTab === 'ai' && (
           <div className="card">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">AI Assistant</h3>
-            <div className="text-center py-12 text-gray-500">
-              <i className="fas fa-robot text-6xl mb-4 block text-orange-500"></i>
-              <p className="text-lg mb-2">AI Design Assistant</p>
-              <p className="text-sm mb-4">Get AI-powered design suggestions and recommendations based on your uploaded files.</p>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left max-w-2xl mx-auto">
-                <p className="text-sm text-blue-800">
-                  <strong>Coming Soon:</strong> Advanced AI features including:
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">🤖 AI Design Assistant</h3>
+            <div className="text-center py-12">
+              <div className="text-6xl mb-6">🎨✨</div>
+              <p className="text-xl font-semibold text-gray-800 mb-2">AI-Powered Design Intelligence</p>
+              <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+                Get instant AI-powered design suggestions, color palettes, material recommendations, and cost estimates tailored to your project.
+              </p>
+              
+              <button
+                onClick={() => navigate(`/ai-design/${project.id}`)}
+                className="btn-primary text-lg px-8 py-4 inline-flex items-center gap-3"
+              >
+                <i className="fas fa-magic"></i>
+                Launch AI Design Assistant
+              </button>
+              
+              <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
+                  <div className="text-2xl mb-2">🔍</div>
+                  <h4 className="font-semibold text-blue-900 mb-1">Project Analysis</h4>
+                  <p className="text-sm text-blue-800">Comprehensive AI analysis of your design</p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4">
+                  <div className="text-2xl mb-2">🎨</div>
+                  <h4 className="font-semibold text-purple-900 mb-1">Color Palettes</h4>
+                  <p className="text-sm text-purple-800">AI-generated color schemes for any style</p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-4">
+                  <div className="text-2xl mb-2">🏗️</div>
+                  <h4 className="font-semibold text-green-900 mb-1">Materials</h4>
+                  <p className="text-sm text-green-800">Smart material & finish recommendations</p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4">
+                  <div className="text-2xl mb-2">💰</div>
+                  <h4 className="font-semibold text-orange-900 mb-1">Cost Estimates</h4>
+                  <p className="text-sm text-orange-800">AI-powered budget planning & estimation</p>
+                </div>
+              </div>
+              
+              <div className="mt-8 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-4 max-w-2xl mx-auto text-left">
+                <p className="text-sm text-yellow-900">
+                  <strong>⚡ Real-time AI:</strong> Powered by OpenAI's GPT-4, providing professional-grade design insights based on your actual project files and requirements.
                 </p>
-                <ul className="text-sm text-blue-700 mt-2 space-y-1 list-disc list-inside">
-                  <li>Automatic design analysis and suggestions</li>
-                  <li>Material and color palette recommendations</li>
-                  <li>3D visualization generation</li>
-                  <li>Cost estimation and budgeting</li>
-                </ul>
               </div>
             </div>
           </div>
