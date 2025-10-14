@@ -98,6 +98,7 @@ Vite runs on http://localhost:3000
 ## 📖 Documentation
 
 - **[Setup Guide](SETUP_GUIDE.md)** - Detailed installation instructions
+- **[Railway Deployment](RAILWAY_DEPLOYMENT.md)** - Deploy to Railway in 5 minutes
 - **[OpenAI Integration](OPENAI_SETUP_GUIDE.md)** - AI features configuration
 - **[Annotation Guide](ANNOTATION_FEATURE_GUIDE.md)** - CAD editor documentation
 - **[Features Overview](FEATURES.md)** - Complete feature list
@@ -203,6 +204,23 @@ OPENAI_API_KEY=your-openai-api-key
 - Set up file upload limits
 - Enable database backups
 - Use environment-specific .env files
+
+### Deploy to Railway (Recommended) 🚂
+
+**Quick 5-minute deployment!**
+
+1. **Sign up at [Railway.app](https://railway.app)**
+2. **Click "Start a New Project" → "Deploy from GitHub repo"**
+3. **Select this repository**
+4. **Add PostgreSQL database** (+ New → Database → PostgreSQL)
+5. **Set environment variables:**
+   - `SECRET_KEY` (generate with `python -c "import secrets; print(secrets.token_hex(32))"`)
+   - `JWT_SECRET_KEY` (generate another one)
+   - `FLASK_ENV=production`
+   - `OPENAI_API_KEY` (optional)
+6. **Generate domain** and your app is live!
+
+📚 **[Complete Railway Deployment Guide](RAILWAY_DEPLOYMENT.md)**
 
 ### Deploy to Heroku
 ```bash
