@@ -96,7 +96,9 @@ function AppRoutes() {
       <Route
         path="/project/:projectId/annotate/:fileId"
         element={
-          <AnnotationEditor />
+          <ProtectedRoute>
+            <AnnotationEditor />
+          </ProtectedRoute>
         }
       />
 

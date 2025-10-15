@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { projectsAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Toast from '../components/Toast';
 
 const Dashboard = () => {
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
@@ -13,8 +15,11 @@ const Dashboard = () => {
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    loadProjects();
-  }, []);
+    // Only load projects if user is authenticated
+    if (isAuthenticated && !authLoading) {
+      loadProjects();
+    }
+  }, [isAuthenticated, authLoading]);
 
   const loadProjects = async () => {
     try {
@@ -81,6 +86,11 @@ const Dashboard = () => {
   };
 
   if (loading) {
+    return <LoadingSpinner fullScreen />;
+  }
+
+  // Show loading spinner while authentication is being checked
+  if (authLoading) {
     return <LoadingSpinner fullScreen />;
   }
 

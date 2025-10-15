@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory, jsonify, request
+from flask import Flask, render_template, send_from_directory, jsonify, request, redirect
 from werkzeug.exceptions import RequestEntityTooLarge
 from dotenv import load_dotenv
 import os
@@ -32,6 +32,8 @@ from extensions import db, login_manager, cors
 db.init_app(app)
 login_manager.init_app(app)
 login_manager.login_view = 'auth.login'
+login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message_category = 'info'
 cors.init_app(app)
 
 # Ensure upload folder exists
@@ -43,6 +45,14 @@ from models import User
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    # For API requests, return JSON 401 instead of redirecting
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Authentication required'}), 401
+    # For web requests, redirect to login page
+    return redirect('/login')
 
 # Register blueprints
 from routes.auth import auth_bp
@@ -63,6 +73,11 @@ app.register_blueprint(ai_design_bp, url_prefix='/api/ai-design')
 @app.route('/static/uploads/<path:filename>')
 def serve_uploads(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+# Login page for web requests
+@app.route('/login')
+def login_page():
+    return send_from_directory(app.static_folder, 'index.html')
 
 # Serve React App
 @app.route('/')
