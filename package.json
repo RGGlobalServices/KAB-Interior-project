@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --outDir dist",
     "preview": "vite preview",
     "flask": "python app.py",
-    "start": "npm run build && python app.py"
+    "start": "npm run build && python app.py",
+    "build:production": "npm run build && echo 'Frontend build completed'"
   },
   "keywords": [],
   "author": "",

@@ -30,7 +30,15 @@ def start_with_gunicorn():
             print(f"Gunicorn import failed: {import_err}")
             return False
         
+        # Get port from environment, with fallback
         port = os.environ.get('PORT', '5000')
+        # Ensure port is a valid integer
+        try:
+            port = int(port)
+        except (ValueError, TypeError):
+            print(f"Invalid port '{port}', using default 5000")
+            port = 5000
+            
         workers = os.environ.get('WORKERS', '2')
         timeout = os.environ.get('TIMEOUT', '120')
         
@@ -60,7 +68,13 @@ def start_with_waitress():
         from waitress import serve  # type: ignore[import-untyped]
         from app import app
         
-        port = int(os.environ.get('PORT', 5000))
+        # Get port from environment, with fallback
+        port = os.environ.get('PORT', '5000')
+        try:
+            port = int(port)
+        except (ValueError, TypeError):
+            print(f"Invalid port '{port}', using default 5000")
+            port = 5000
         print(f"Starting server with waitress on port {port}")
         serve(app, host='0.0.0.0', port=port)
         return True
@@ -76,7 +90,13 @@ def start_with_flask_dev():
     try:
         from app import app
         
-        port = int(os.environ.get('PORT', 5000))
+        # Get port from environment, with fallback
+        port = os.environ.get('PORT', '5000')
+        try:
+            port = int(port)
+        except (ValueError, TypeError):
+            print(f"Invalid port '{port}', using default 5000")
+            port = 5000
         debug = os.environ.get('FLASK_ENV') == 'development'
         print(f"Starting server with Flask dev server on port {port}")
         app.run(host='0.0.0.0', port=port, debug=debug)
@@ -87,6 +107,13 @@ def start_with_flask_dev():
 
 if __name__ == '__main__':
     print("Attempting to start server...")
+    
+    # Debug environment variables
+    print(f"Environment variables:")
+    print(f"  PORT: {os.environ.get('PORT', 'NOT SET')}")
+    print(f"  FLASK_ENV: {os.environ.get('FLASK_ENV', 'NOT SET')}")
+    print(f"  PYTHONPATH: {os.environ.get('PYTHONPATH', 'NOT SET')}")
+    print(f"  Platform: {sys.platform}")
     
     # Choose server based on platform
     if sys.platform == 'win32':

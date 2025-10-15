@@ -1,8 +1,19 @@
 services:
   - type: web
     name: ai-interior-design
-    env: docker
-    dockerfilePath: ./Dockerfile
+    env: python
+    buildCommand: |
+      # Install Node.js
+      curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+      sudo apt-get install -y nodejs
+      
+      # Install Python dependencies
+      pip install -r requirements.txt
+      
+      # Install Node.js dependencies and build frontend
+      npm install
+      npm run build
+    startCommand: python start_server.py
     plan: starter
     envVars:
       - key: SECRET_KEY

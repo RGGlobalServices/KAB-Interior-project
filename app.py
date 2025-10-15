@@ -73,7 +73,32 @@ def serve_uploads(filename):
 # Serve React App
 @app.route('/')
 def serve_react_app_root():
-    return send_from_directory(app.static_folder, 'index.html')
+    try:
+        # Debug: Check if static folder and index.html exist
+        static_folder_path = app.static_folder
+        index_path = os.path.join(static_folder_path, 'index.html')
+        
+        print(f"Static folder: {static_folder_path}")
+        print(f"Looking for index.html at: {index_path}")
+        print(f"Static folder exists: {os.path.exists(static_folder_path)}")
+        print(f"index.html exists: {os.path.exists(index_path)}")
+        
+        if os.path.exists(index_path):
+            return send_from_directory(app.static_folder, 'index.html')
+        else:
+            # List files in static folder for debugging
+            if os.path.exists(static_folder_path):
+                files = os.listdir(static_folder_path)
+                print(f"Files in static folder: {files}")
+            return jsonify({
+                'error': 'Frontend not built',
+                'static_folder': static_folder_path,
+                'index_exists': os.path.exists(index_path),
+                'files': os.listdir(static_folder_path) if os.path.exists(static_folder_path) else []
+            }), 500
+    except Exception as e:
+        print(f"Error serving React app: {e}")
+        return jsonify({'error': f'Static file error: {str(e)}'}), 500
 
 @app.route('/<path:path>')
 def serve_react_app(path):
@@ -179,6 +204,13 @@ with app.app_context():
 print("Flask app initialization completed successfully!")
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))
+    # Get port from environment, with fallback
+    port = os.getenv('PORT', '5000')
+    try:
+        port = int(port)
+    except (ValueError, TypeError):
+        print(f"Invalid port '{port}', using default 5000")
+        port = 5000
     debug = os.getenv('FLASK_ENV', 'development') == 'development'
+    print(f"Starting Flask app on port {port}")
     app.run(debug=debug, host='0.0.0.0', port=port)

@@ -36,4 +36,4 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Start the application
-CMD gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 2 --timeout 120 app:app
+CMD python start_server.py

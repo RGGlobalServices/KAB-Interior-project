@@ -1,7 +1,7 @@
 # Alternative Procfile configurations for different deployment platforms
 
 # Option 1: Using gunicorn (CURRENT - optimized for production)
-web: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 app:app
+web: python start_server.py
 
 # Option 2: Using robust startup script (recommended for complex deployments)
 # web: python start_server.py
