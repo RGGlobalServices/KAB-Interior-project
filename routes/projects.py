@@ -22,32 +22,68 @@ def get_current_user_id():
 @projects_bp.route('', methods=['GET'])
 @jwt_required(optional=True)
 def get_projects():
-    user_id = get_current_user_id()
-    projects = Project.query.filter_by(user_id=user_id).all()
-    return jsonify([p.to_dict() for p in projects]), 200
+    try:
+        user_id = get_current_user_id()
+        print(f"Getting projects for user_id: {user_id}")
+        
+        # Verify user exists
+        from models import User
+        user = User.query.get(user_id)
+        if not user:
+            print(f"User with ID {user_id} not found")
+            return jsonify({'error': f'User with ID {user_id} not found'}), 422
+        
+        projects = Project.query.filter_by(user_id=user_id).all()
+        print(f"Found {len(projects)} projects for user {user_id}")
+        return jsonify([p.to_dict() for p in projects]), 200
+        
+    except Exception as e:
+        print(f"Error getting projects: {str(e)}")
+        return jsonify({'error': f'Failed to get projects: {str(e)}'}), 500
 
 @projects_bp.route('', methods=['POST'])
 @jwt_required(optional=True)
 def create_project():
-    user_id = get_current_user_id()
-    data = request.get_json()
-    
-    name = data.get('name')
-    description = data.get('description')
-    
-    if not all([name, description]):
-        return jsonify({'message': 'Name and description are required'}), 400
-    
-    project = Project(
-        name=name,
-        description=description,
-        user_id=user_id
-    )
-    
-    db.session.add(project)
-    db.session.commit()
-    
-    return jsonify(project.to_dict()), 201
+    try:
+        user_id = get_current_user_id()
+        data = request.get_json()
+        
+        # Debug logging
+        print(f"Creating project for user_id: {user_id}")
+        print(f"Request data: {data}")
+        
+        if not data:
+            return jsonify({'error': 'No JSON data provided'}), 400
+        
+        name = data.get('name')
+        description = data.get('description')
+        
+        if not all([name, description]):
+            return jsonify({'error': 'Name and description are required'}), 400
+        
+        # Verify user exists
+        from models import User
+        user = User.query.get(user_id)
+        if not user:
+            print(f"User with ID {user_id} not found")
+            return jsonify({'error': f'User with ID {user_id} not found'}), 422
+        
+        project = Project(
+            name=name,
+            description=description,
+            user_id=user_id
+        )
+        
+        db.session.add(project)
+        db.session.commit()
+        
+        print(f"Project created successfully: {project.id}")
+        return jsonify(project.to_dict()), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error creating project: {str(e)}")
+        return jsonify({'error': f'Failed to create project: {str(e)}'}), 500
 
 @projects_bp.route('/<int:project_id>', methods=['GET'])
 @jwt_required(optional=True)

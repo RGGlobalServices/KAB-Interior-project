@@ -122,12 +122,31 @@ def serve_react_app(path):
 # Health check endpoint
 @app.route('/api/health')
 def health():
-    return {
-        'status': 'ok',
-        'environment': os.getenv('FLASK_ENV', 'development'),
-        'port': os.getenv('PORT', '5000'),
-        'database_url': 'configured' if os.getenv('DATABASE_URL') else 'sqlite'
-    }
+    try:
+        # Check database connection
+        from models import User
+        user_count = User.query.count()
+        demo_user = User.query.filter_by(email='demo@example.com').first()
+        
+        return {
+            'status': 'ok',
+            'environment': os.getenv('FLASK_ENV', 'development'),
+            'port': os.getenv('PORT', '5000'),
+            'database_url': 'configured' if os.getenv('DATABASE_URL') else 'sqlite',
+            'database_status': 'connected',
+            'user_count': user_count,
+            'demo_user_exists': demo_user is not None,
+            'demo_user_id': demo_user.id if demo_user else None
+        }
+    except Exception as e:
+        return {
+            'status': 'error',
+            'environment': os.getenv('FLASK_ENV', 'development'),
+            'port': os.getenv('PORT', '5000'),
+            'database_url': 'configured' if os.getenv('DATABASE_URL') else 'sqlite',
+            'database_status': 'error',
+            'error': str(e)
+        }
 
 # Simple test endpoint
 @app.route('/api/test')
