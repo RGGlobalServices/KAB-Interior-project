@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: ai-interior-design
+    env: python
+    buildCommand: npm install && npm run build
+    startCommand: gunicorn app:app
+    plan: starter
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.6
+    healthCheckPath: /api/health
+
+databases:
+  - name: ai-interior-design-db
+    plan: starter
+    databaseName: interior_design
+    user: interior_design_user
