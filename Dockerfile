@@ -30,10 +30,10 @@ COPY . .
 RUN npm run build
 
 # Set default port
-ENV PORT=3000
+ENV PORT=8080
 
 # Expose port
-EXPOSE $PORT
+EXPOSE 8080
 
 # Start the application
-CMD gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 app:app
+CMD gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 2 --timeout 120 app:app
