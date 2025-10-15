@@ -1,16 +1,63 @@
 #!/usr/bin/env python3
 """
-Robust server startup script for deployment
-Handles multiple WSGI server options with fallbacks
+Optimized server startup script for deployment
+Uses gunicorn as primary server with Flask dev fallback
 """
 
 import os
 import sys
 
-def start_with_waitress():
-    """Start server with waitress (recommended for deployment)"""
+def start_with_gunicorn():
+    """Start server with gunicorn (recommended for production)"""
     try:
-        from waitress import serve
+        # Check if we're on Windows - gunicorn doesn't work on Windows
+        if sys.platform == 'win32':
+            print("Gunicorn is not compatible with Windows - skipping")
+            return False
+            
+        # Check if gunicorn is available before importing
+        import importlib.util
+        gunicorn_spec = importlib.util.find_spec("gunicorn")
+        if gunicorn_spec is None:
+            print("Gunicorn not installed - install with: pip install gunicorn")
+            return False
+            
+        # Import gunicorn modules only if available
+        try:
+            import gunicorn.app.wsgiapp as wsgi  # type: ignore[import-untyped]
+            from app import app
+        except ImportError as import_err:
+            print(f"Gunicorn import failed: {import_err}")
+            return False
+        
+        port = os.environ.get('PORT', '5000')
+        workers = os.environ.get('WORKERS', '2')
+        timeout = os.environ.get('TIMEOUT', '120')
+        
+        sys.argv = [
+            'gunicorn', 
+            'app:app', 
+            '--bind', f'0.0.0.0:{port}', 
+            '--workers', workers,
+            '--timeout', timeout,
+            '--access-logfile', '-',
+            '--error-logfile', '-'
+        ]
+        print(f"Starting server with gunicorn on port {port} with {workers} workers")
+        wsgi.run()
+        return True
+    except ImportError as e:
+        print(f"Gunicorn import error: {e}")
+        print("Note: Gunicorn is not compatible with Windows")
+        return False
+    except Exception as e:
+        print(f"Error starting with gunicorn: {e}")
+        return False
+
+def start_with_waitress():
+    """Start server with waitress (Windows-compatible production server)"""
+    try:
+        from waitress import serve  # type: ignore[import-untyped]
         from app import app
         
         port = int(os.environ.get('PORT', 5000))
@@ -22,24 +69,6 @@ def start_with_waitress():
         return False
     except Exception as e:
         print(f"Error starting with waitress: {e}")
-        return False
-
-def start_with_gunicorn():
-    """Start server with gunicorn"""
-    try:
-        import gunicorn.app.wsgiapp as wsgi
-        from app import app
-        
-        port = os.environ.get('PORT', '5000')
-        sys.argv = ['gunicorn', 'app:app', '--bind', f'0.0.0.0:{port}', '--workers', '4']
-        print(f"Starting server with gunicorn on port {port}")
-        wsgi.run()
-        return True
-    except ImportError:
-        print("Gunicorn not available")
-        return False
-    except Exception as e:
-        print(f"Error starting with gunicorn: {e}")
         return False
 
 def start_with_flask_dev():
@@ -59,13 +88,24 @@ def start_with_flask_dev():
 if __name__ == '__main__':
     print("Attempting to start server...")
     
-    # Try different server options in order of preference
-    if start_with_waitress():
-        pass
-    elif start_with_gunicorn():
-        pass
-    elif start_with_flask_dev():
-        pass
+    # Choose server based on platform
+    if sys.platform == 'win32':
+        # On Windows, try waitress first, then Flask dev server
+        if start_with_waitress():
+            pass
+        elif start_with_flask_dev():
+            pass
+        else:
+            print("Failed to start server with any available method")
+            sys.exit(1)
     else:
-        print("Failed to start server with any available method")
-        sys.exit(1)
+        # On Unix-like systems, try gunicorn first, then waitress, then Flask dev server
+        if start_with_gunicorn():
+            pass
+        elif start_with_waitress():
+            pass
+        elif start_with_flask_dev():
+            pass
+        else:
+            print("Failed to start server with any available method")
+            sys.exit(1)

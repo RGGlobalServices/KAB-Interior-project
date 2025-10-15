@@ -1,19 +1,19 @@
 # Alternative Procfile configurations for different deployment platforms
 
-# Option 1: Using waitress (CURRENT - most reliable)
-web: python -c "from waitress import serve; from app import app; serve(app, host='0.0.0.0', port=$PORT)"
+# Option 1: Using gunicorn (CURRENT - optimized for production)
+web: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 app:app
 
 # Option 2: Using robust startup script (recommended for complex deployments)
 # web: python start_server.py
 
 # Option 3: Using python -m gunicorn
-# web: python -m gunicorn app:app --bind 0.0.0.0:$PORT --workers 4
+# web: python -m gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
 
-# Option 4: Using uvicorn (if you prefer ASGI)
-# web: uvicorn app:app --host 0.0.0.0 --port $PORT --workers 4
+# Option 4: Using waitress (alternative WSGI server)
+# web: python -c "from waitress import serve; from app import app; serve(app, host='0.0.0.0', port=$PORT)"
 
-# Option 5: Using Flask's built-in server (for development/testing)
+# Option 5: Using Flask's built-in server (for development/testing only)
 # web: python app.py
 
-# Option 6: Using gunicorn with explicit path
-# web: /app/.heroku/python/bin/gunicorn app:app --bind 0.0.0.0:$PORT --workers 4
+# Option 6: Using gunicorn with explicit path (for Heroku)
+# web: /app/.heroku/python/bin/gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
