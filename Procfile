@@ -1,2 +1,2 @@
-web: python -m gunicorn app:app --bind 0.0.0.0:$PORT --workers 4
+web: python -c "from waitress import serve; from app import app; serve(app, host='0.0.0.0', port=$PORT)"
 
