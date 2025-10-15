@@ -129,23 +129,44 @@ def missing_token_callback(error):
 
 # Create database tables
 with app.app_context():
-    db.create_all()
+    try:
+        # Check if tables exist before creating
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        existing_tables = inspector.get_table_names()
+        
+        if not existing_tables:
+            db.create_all()
+            print("Database tables created successfully")
+        else:
+            print(f"Database tables already exist: {existing_tables}")
+    except Exception as e:
+        print(f"Error checking/creating database tables: {e}")
+        # Fallback: try to create tables anyway
+        try:
+            db.create_all()
+            print("Database tables created on fallback")
+        except Exception as fallback_e:
+            print(f"Fallback table creation also failed: {fallback_e}")
     
     # Create demo user if not exists
-    # Removed redundant comments: 'from models import User' since it's now imported above and 'import bcrypt' since it's a top-level import
-    
-    demo_user = User.query.filter_by(email='demo@example.com').first()
-    if not demo_user:
-        hashed = bcrypt.hashpw('demo123'.encode('utf-8'), bcrypt.gensalt())
-        demo_user = User(
-            name='Demo User',
-            email='demo@example.com',
-            password=hashed.decode('utf-8'),
-            role='user'
-        )
-        db.session.add(demo_user)
-        db.session.commit()
-        print("Demo user created: demo@example.com / demo123")
+    try:
+        demo_user = User.query.filter_by(email='demo@example.com').first()
+        if not demo_user:
+            hashed = bcrypt.hashpw('demo123'.encode('utf-8'), bcrypt.gensalt())
+            demo_user = User(
+                name='Demo User',
+                email='demo@example.com',
+                password=hashed.decode('utf-8'),
+                role='user'
+            )
+            db.session.add(demo_user)
+            db.session.commit()
+            print("Demo user created: demo@example.com / demo123")
+        else:
+            print("Demo user already exists")
+    except Exception as e:
+        print(f"Error creating demo user: {e}")
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
