@@ -13,9 +13,7 @@ services:
       - key: FLASK_ENV
         value: production
       - key: PYTHON_VERSION
-        value: 3.11.6
-      - key: PORT
-        value: 10000
+        value: 3.11.9
     healthCheckPath: /api/health
 
 databases:

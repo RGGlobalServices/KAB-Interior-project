@@ -71,12 +71,17 @@ def serve_uploads(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 # Serve React App
-@app.route('/', defaults={'path': ''})
+@app.route('/')
+def serve_react_app_root():
+    return send_from_directory(app.static_folder, 'index.html')
+
 @app.route('/<path:path>')
 def serve_react_app(path):
-    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+    # Check if it's a static file that exists
+    if os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
     else:
+        # For any other path, serve the React app (for client-side routing)
         return send_from_directory(app.static_folder, 'index.html')
 
 # Health check endpoint
@@ -90,10 +95,11 @@ def health():
 # Error handlers
 @app.errorhandler(404)
 def not_found(error):
-    # Return JSON for API requests, HTML for others
+    # Return JSON for API requests, serve React app for others
     if request.path.startswith('/api/'):
         return jsonify(error='Resource not found'), 404
-    return jsonify(error='Page not found'), 404
+    # For non-API requests, serve the React app
+    return send_from_directory(app.static_folder, 'index.html')
 
 @app.errorhandler(500)
 def internal_error(error):
