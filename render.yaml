@@ -1,8 +1,9 @@
 services:
   - type: web
     name: ai-interior-design
-    env: docker
-    dockerfilePath: ./Dockerfile
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python start_server.py
     plan: starter
     envVars:
       - key: SECRET_KEY
