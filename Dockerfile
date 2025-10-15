@@ -29,6 +29,9 @@ COPY . .
 # Build the React frontend
 RUN npm run build
 
+# Set default port
+ENV PORT=3000
+
 # Expose port
 EXPOSE $PORT
 
