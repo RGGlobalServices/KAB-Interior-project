@@ -6,7 +6,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import ProjectDetail from './pages/ProjectDetail';
+import ProjectDetailEnhanced from './pages/ProjectDetailEnhanced';
 import AnnotationEditor from './pages/AnnotationEditor';
 import AIDesignAssistant from './pages/AIDesignAssistant';
 
@@ -79,7 +79,7 @@ function AppRoutes() {
         path="/project/:id"
         element={
           <ProtectedRoute>
-            <ProjectDetail />
+            <ProjectDetailEnhanced />
           </ProtectedRoute>
         }
       />

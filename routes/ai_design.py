@@ -1,17 +1,12 @@
 from flask import Blueprint, request, jsonify, current_app
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_login import login_required, current_user
 from extensions import db
-from models import Project, ProjectFile
+from models import Project, ProjectFile, User
 import os
 import PyPDF2
 import threading
 
 ai_design_bp = Blueprint('ai_design', __name__)
-
-# Helper function to get user ID (defaults to demo user if no token)
-def get_current_user_id():
-    user_id = get_jwt_identity()
-    return user_id if user_id else 1
 
 def get_openai_client():
     """Get OpenAI client, initializing it if needed"""
@@ -43,12 +38,11 @@ def extract_text_from_pdf(file_path, max_pages=10):
         return ""
 
 @ai_design_bp.route('/analyze/<int:project_id>', methods=['POST'])
-@jwt_required(optional=True)
 def analyze_project(project_id):
     """
     Analyze a project and provide AI-powered design insights
     """
-    user_id = get_current_user_id()
+    user_id = current_user.id
     project = Project.query.filter_by(id=project_id, user_id=user_id).first()
     
     if not project:
@@ -133,12 +127,11 @@ Format your response in a clear, professional manner with specific, actionable r
         }), 500
 
 @ai_design_bp.route('/color-palette/<int:project_id>', methods=['POST'])
-@jwt_required(optional=True)
 def generate_color_palette(project_id):
     """
     Generate AI-powered color palette recommendations
     """
-    user_id = get_current_user_id()
+    user_id = current_user.id
     project = Project.query.filter_by(id=project_id, user_id=user_id).first()
     
     if not project:
@@ -191,12 +184,11 @@ Format each color as: Color Name (#HEXCODE) - Usage description"""
         return jsonify({'error': str(e)}), 500
 
 @ai_design_bp.route('/material-recommendations/<int:project_id>', methods=['POST'])
-@jwt_required(optional=True)
 def recommend_materials(project_id):
     """
     Generate AI-powered material and finish recommendations
     """
-    user_id = get_current_user_id()
+    user_id = current_user.id
     project = Project.query.filter_by(id=project_id, user_id=user_id).first()
     
     if not project:
@@ -254,12 +246,11 @@ For each material, include:
         return jsonify({'error': str(e)}), 500
 
 @ai_design_bp.route('/cost-estimate/<int:project_id>', methods=['POST'])
-@jwt_required(optional=True)
 def estimate_costs(project_id):
     """
     Generate AI-powered cost estimation and budgeting
     """
-    user_id = get_current_user_id()
+    user_id = current_user.id
     project = Project.query.filter_by(id=project_id, user_id=user_id).first()
     
     if not project:
@@ -324,7 +315,6 @@ Also include:
         return jsonify({'error': str(e)}), 500
 
 @ai_design_bp.route('/quick-suggestion', methods=['POST'])
-@jwt_required(optional=True)
 def quick_suggestion():
     """
     Get a quick AI design suggestion without a specific project

@@ -14,9 +14,7 @@ app = Flask(__name__,
            static_url_path='')
 
 # Configuration
-# SECURITY UPDATE: Replaced the default secret with a clearly visible placeholder.
-# In production, this environment variable MUST be set.
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', '!!!-SET-SECRET-KEY-ENV-VAR-!!!')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'simple-secret-key-for-development')
 
 # Database URL - Railway provides DATABASE_URL with postgres:// which needs to be postgresql://
 database_url = os.getenv('DATABASE_URL', 'sqlite:///interior_design.db')
@@ -25,19 +23,15 @@ if database_url.startswith('postgres://'):
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# SECURITY UPDATE: Replaced the default JWT secret with a clearly visible placeholder.
-# In production, this environment variable MUST be set.
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', '!!!-SET-JWT-SECRET-KEY-ENV-VAR-!!!')
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
 
 # Initialize extensions
-from extensions import db, login_manager, jwt, cors
+from extensions import db, login_manager, cors
 
 db.init_app(app)
 login_manager.init_app(app)
 login_manager.login_view = 'auth.login'
-jwt.init_app(app)
 cors.init_app(app)
 
 # Ensure upload folder exists
@@ -53,7 +47,6 @@ def load_user(user_id):
 # Register blueprints
 from routes.auth import auth_bp
 from routes.projects import projects_bp
-from routes.projects_no_auth import projects_no_auth_bp
 from routes.annotations import annotations_bp
 from routes.qa import qa_bp
 from routes.discussions import discussions_bp
@@ -61,7 +54,6 @@ from routes.ai_design import ai_design_bp
 
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(projects_bp, url_prefix='/api/projects')
-app.register_blueprint(projects_no_auth_bp, url_prefix='/api/projects-no-auth')
 app.register_blueprint(annotations_bp, url_prefix='/api/annotations')
 app.register_blueprint(qa_bp, url_prefix='/api/qa')
 app.register_blueprint(discussions_bp, url_prefix='/api/discussions')
@@ -177,18 +169,6 @@ def file_too_large(e):
     # This ensures a clean JSON response for file size errors
     return jsonify(error="File is larger than the maximum allowed size (50MB)."), 413
 
-# JWT error handlers
-@jwt.expired_token_loader
-def expired_token_callback(jwt_header, jwt_payload):
-    return jsonify(error='Token has expired', message='Please log in again'), 401
-
-@jwt.invalid_token_loader
-def invalid_token_callback(error):
-    return jsonify(error='Invalid token', message='Please log in again'), 422
-
-@jwt.unauthorized_loader
-def missing_token_callback(error):
-    return jsonify(error='Missing authorization token', message='Please log in'), 401
 
 # Create database tables
 with app.app_context():
@@ -213,24 +193,23 @@ with app.app_context():
         except Exception as fallback_e:
             print(f"Fallback table creation also failed: {fallback_e}")
     
-    # Create demo user if not exists
+    # Create default user if not exists
     try:
-        demo_user = User.query.filter_by(email='demo@example.com').first()
-        if not demo_user:
-            hashed = bcrypt.hashpw('demo123'.encode('utf-8'), bcrypt.gensalt())
-            demo_user = User(
-                name='Demo User',
-                email='demo@example.com',
-                password=hashed.decode('utf-8'),
+        default_user = User.query.filter_by(email='default@example.com').first()
+        if not default_user:
+            default_user = User(
+                name='Default User',
+                email='default@example.com',
+                password='default',
                 role='user'
             )
-            db.session.add(demo_user)
+            db.session.add(default_user)
             db.session.commit()
-            print("Demo user created: demo@example.com / demo123")
+            print("Default user created: default@example.com")
         else:
-            print("Demo user already exists")
+            print("Default user already exists")
     except Exception as e:
-        print(f"Error creating demo user: {e}")
+        print(f"Error creating default user: {e}")
 
 print("Flask app initialization completed successfully!")
 

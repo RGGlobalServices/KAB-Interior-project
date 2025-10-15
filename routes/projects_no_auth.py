@@ -16,18 +16,16 @@ def allowed_file(filename):
 def get_or_create_default_user():
     """Get or create a default user for projects without authentication"""
     try:
-        # Try to get the demo user first
-        user = User.query.filter_by(email='demo@example.com').first()
+        # Try to get the default user first
+        user = User.query.filter_by(email='default@example.com').first()
         if user:
             return user
         
-        # If demo user doesn't exist, create it
-        import bcrypt
-        hashed = bcrypt.hashpw('demo123'.encode('utf-8'), bcrypt.gensalt())
+        # If default user doesn't exist, create it
         user = User(
-            name='Demo User',
-            email='demo@example.com',
-            password=hashed.decode('utf-8'),
+            name='Default User',
+            email='default@example.com',
+            password='default',
             role='user'
         )
         db.session.add(user)
@@ -37,21 +35,7 @@ def get_or_create_default_user():
         
     except Exception as e:
         print(f"Error getting/creating default user: {e}")
-        # Fallback: create a simple user without password hashing
-        try:
-            user = User(
-                name='Default User',
-                email='default@example.com',
-                password='default',
-                role='user'
-            )
-            db.session.add(user)
-            db.session.commit()
-            print(f"Created fallback user: {user.id}")
-            return user
-        except Exception as fallback_e:
-            print(f"Fallback user creation failed: {fallback_e}")
-            return None
+        return None
 
 @projects_no_auth_bp.route('', methods=['GET'])
 def get_projects():

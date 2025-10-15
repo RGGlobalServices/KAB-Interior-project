@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { projectsAPI, qaAPI, discussionsAPI } from '../services/api';
+import { projectsAPI } from '../services/api';
+import { qaAPI, discussionsAPI } from '../services/api';
 import { formatDate, formatFileSize, getFileIcon } from '../utils/helpers';
 import Modal from '../components/Modal';
 import LoadingSpinner from '../components/LoadingSpinner';

@@ -1,16 +1,11 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_login import login_required, current_user
 from extensions import db
 from models import Question, User, Project, ProjectFile
 import threading
 import os
 
 qa_bp = Blueprint('qa', __name__)
-
-# Helper function to get user ID (defaults to demo user if no token)
-def get_current_user_id():
-    user_id = get_jwt_identity()
-    return user_id if user_id else 1
 
 # Initialize OpenAI client lazily to ensure .env is loaded
 def get_openai_client():
@@ -97,15 +92,15 @@ Please provide a detailed, professional answer to this question about the interi
                 db.session.commit()
 
 @qa_bp.route('/project/<int:project_id>', methods=['GET'])
-@jwt_required(optional=True)
+@login_required
 def get_questions(project_id):
     questions = Question.query.filter_by(project_id=project_id).all()
     return jsonify([q.to_dict() for q in questions]), 200
 
 @qa_bp.route('', methods=['POST'])
-@jwt_required(optional=True)
+@login_required
 def ask_question():
-    user_id = get_current_user_id()
+    user_id = current_user.id
     data = request.get_json()
     
     project_id = data.get('project_id')
