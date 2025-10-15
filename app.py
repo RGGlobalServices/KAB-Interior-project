@@ -53,6 +53,7 @@ def load_user(user_id):
 # Register blueprints
 from routes.auth import auth_bp
 from routes.projects import projects_bp
+from routes.projects_no_auth import projects_no_auth_bp
 from routes.annotations import annotations_bp
 from routes.qa import qa_bp
 from routes.discussions import discussions_bp
@@ -60,6 +61,7 @@ from routes.ai_design import ai_design_bp
 
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(projects_bp, url_prefix='/api/projects')
+app.register_blueprint(projects_no_auth_bp, url_prefix='/api/projects-no-auth')
 app.register_blueprint(annotations_bp, url_prefix='/api/annotations')
 app.register_blueprint(qa_bp, url_prefix='/api/qa')
 app.register_blueprint(discussions_bp, url_prefix='/api/discussions')

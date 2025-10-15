@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>No-Auth Projects API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.delete {
+            background-color: #dc3545;
+        }
+        button.delete:hover {
+            background-color: #c82333;
+        }
+        .result {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .project-item {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>No-Auth Projects API Test</h1>
+    <p>This page tests the projects API without requiring any authentication tokens.</p>
+
+    <div class="container">
+        <h2>API Health Check</h2>
+        <button onclick="testHealthCheck()">Test Health Check</button>
+        <div id="healthResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>Get All Projects</h2>
+        <button onclick="getAllProjects()">Get All Projects</button>
+        <div id="projectsResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>Create New Project</h2>
+        <div class="form-group">
+            <label for="projectName">Project Name:</label>
+            <input type="text" id="projectName" placeholder="Enter project name" required>
+        </div>
+        <div class="form-group">
+            <label for="projectDescription">Description:</label>
+            <textarea id="projectDescription" rows="3" placeholder="Enter project description"></textarea>
+        </div>
+        <button onclick="createProject()">Create Project</button>
+        <div id="createResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>Projects List</h2>
+        <button onclick="loadProjects()">Load Projects</button>
+        <div id="projectsList"></div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/projects-no-auth';
+
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${isError ? 'error' : 'success'}`;
+            element.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        }
+
+        async function testHealthCheck() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                if (response.ok) {
+                    showResult('healthResult', `Health Check: ${data.message}\nUser ID: ${data.user_id}\nProjects Count: ${data.projects_count}`);
+                } else {
+                    showResult('healthResult', `Health Check Failed: ${data.error}`, true);
+                }
+            } catch (error) {
+                showResult('healthResult', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function getAllProjects() {
+            try {
+                const response = await fetch(API_BASE);
+                const data = await response.json();
+                if (response.ok) {
+                    showResult('projectsResult', `Found ${data.length} projects:\n${JSON.stringify(data, null, 2)}`);
+                } else {
+                    showResult('projectsResult', `Failed to get projects: ${data.error}`, true);
+                }
+            } catch (error) {
+                showResult('projectsResult', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function createProject() {
+            const name = document.getElementById('projectName').value;
+            const description = document.getElementById('projectDescription').value;
+
+            if (!name.trim()) {
+                showResult('createResult', 'Project name is required!', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, description })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showResult('createResult', `Project created successfully!\n${JSON.stringify(data, null, 2)}`);
+                    document.getElementById('projectName').value = '';
+                    document.getElementById('projectDescription').value = '';
+                    loadProjects(); // Refresh the projects list
+                } else {
+                    showResult('createResult', `Failed to create project: ${data.error}`, true);
+                }
+            } catch (error) {
+                showResult('createResult', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function loadProjects() {
+            try {
+                const response = await fetch(API_BASE);
+                const data = await response.json();
+                const container = document.getElementById('projectsList');
+                
+                if (response.ok) {
+                    if (data.length === 0) {
+                        container.innerHTML = '<p>No projects found.</p>';
+                    } else {
+                        container.innerHTML = data.map(project => `
+                            <div class="project-item">
+                                <h3>${project.name}</h3>
+                                <p>${project.description || 'No description'}</p>
+                                <p><small>Created: ${new Date(project.created_at).toLocaleDateString()}</small></p>
+                                <button class="delete" onclick="deleteProject(${project.id}, '${project.name}')">Delete</button>
+                            </div>
+                        `).join('');
+                    }
+                } else {
+                    container.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('projectsList').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function deleteProject(id, name) {
+            if (!confirm(`Are you sure you want to delete project "${name}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Project deleted successfully!');
+                    loadProjects(); // Refresh the projects list
+                } else {
+                    alert(`Failed to delete project: ${data.error}`);
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        // Load projects on page load
+        window.onload = function() {
+            loadProjects();
+        };
+    </script>
+</body>
+</html>
