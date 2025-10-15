@@ -252,6 +252,13 @@ const ProjectDetail = () => {
                         <i className="fas fa-eye mr-1"></i>
                         View
                       </a>
+                      <button
+                        onClick={() => navigate(`/project/${project.id}/annotate/${file.id}`, { state: { file } })}
+                        className="btn-primary flex-1 text-center text-sm py-2"
+                      >
+                        <i className="fas fa-edit mr-1"></i>
+                        Annotate
+                      </button>
                     </div>
                   </div>
                 ))}
