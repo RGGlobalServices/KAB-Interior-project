@@ -89,8 +89,15 @@ def serve_react_app(path):
 def health():
     return {
         'status': 'ok',
-        'environment': os.getenv('FLASK_ENV', 'development')
+        'environment': os.getenv('FLASK_ENV', 'development'),
+        'port': os.getenv('PORT', '5000'),
+        'database_url': 'configured' if os.getenv('DATABASE_URL') else 'sqlite'
     }
+
+# Simple test endpoint
+@app.route('/api/test')
+def test():
+    return {'message': 'App is running successfully!'}
 
 # Error handlers
 @app.errorhandler(404)
@@ -129,6 +136,7 @@ def missing_token_callback(error):
 
 # Create database tables
 with app.app_context():
+    print("Starting database initialization...")
     try:
         # Check if tables exist before creating
         from sqlalchemy import inspect
@@ -167,6 +175,8 @@ with app.app_context():
             print("Demo user already exists")
     except Exception as e:
         print(f"Error creating demo user: {e}")
+
+print("Flask app initialization completed successfully!")
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
