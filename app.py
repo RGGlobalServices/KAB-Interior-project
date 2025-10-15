@@ -87,14 +87,24 @@ def serve_react_app_root():
             return send_from_directory(app.static_folder, 'index.html')
         else:
             # List files in static folder for debugging
+            files = []
             if os.path.exists(static_folder_path):
-                files = os.listdir(static_folder_path)
-                print(f"Files in static folder: {files}")
+                try:
+                    files = os.listdir(static_folder_path)
+                    print(f"Files in static folder: {files}")
+                except Exception as e:
+                    print(f"Error listing static folder: {e}")
+                    files = [f"Error: {e}"]
+            else:
+                print(f"Static folder does not exist: {static_folder_path}")
+                
             return jsonify({
                 'error': 'Frontend not built',
                 'static_folder': static_folder_path,
                 'index_exists': os.path.exists(index_path),
-                'files': os.listdir(static_folder_path) if os.path.exists(static_folder_path) else []
+                'files': files,
+                'current_working_directory': os.getcwd(),
+                'all_files_in_root': os.listdir('.') if os.path.exists('.') else []
             }), 500
     except Exception as e:
         print(f"Error serving React app: {e}")
