@@ -108,10 +108,19 @@ def start_with_flask_dev():
 if __name__ == '__main__':
     print("Attempting to start server...")
     
+    # Setup environment variables
+    try:
+        from setup_env import setup_environment
+        setup_environment()
+    except ImportError:
+        print("setup_env.py not found, using existing environment variables")
+    
     # Debug environment variables
     print(f"Environment variables:")
     print(f"  PORT: {os.environ.get('PORT', 'NOT SET')}")
     print(f"  FLASK_ENV: {os.environ.get('FLASK_ENV', 'NOT SET')}")
+    print(f"  SECRET_KEY: {'SET' if os.environ.get('SECRET_KEY') else 'NOT SET'}")
+    print(f"  DATABASE_URL: {os.environ.get('DATABASE_URL', 'NOT SET')}")
     print(f"  PYTHONPATH: {os.environ.get('PYTHONPATH', 'NOT SET')}")
     print(f"  Platform: {sys.platform}")
     

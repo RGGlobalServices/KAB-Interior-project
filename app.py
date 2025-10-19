@@ -20,6 +20,16 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'simple-secret-key-for-develo
 database_url = os.getenv('DATABASE_URL', 'sqlite:///interior_design.db')
 if database_url.startswith('postgres://'):
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
+# For SQLite in deployment, use a writable directory
+if database_url.startswith('sqlite:///'):
+    # In deployment, use /tmp directory which is writable
+    if os.path.exists('/tmp'):
+        database_url = 'sqlite:////tmp/interior_design.db'
+    else:
+        # Fallback to current directory
+        database_url = 'sqlite:///interior_design.db'
+
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -188,6 +198,8 @@ def file_too_large(e):
 # Create database tables
 with app.app_context():
     print("Starting database initialization...")
+    print(f"Database URL: {app.config['SQLALCHEMY_DATABASE_URI']}")
+    
     try:
         # Check if tables exist before creating
         from sqlalchemy import inspect
@@ -207,15 +219,21 @@ with app.app_context():
             print("Database tables created on fallback")
         except Exception as fallback_e:
             print(f"Fallback table creation also failed: {fallback_e}")
+            # If all else fails, continue without database - the app will handle this gracefully
     
-    # Create default user if not exists
+    # Create default user if not exists (only if database is working)
     try:
+        # Test database connection first
+        db.session.execute(db.text('SELECT 1'))
         default_user = User.query.filter_by(email='default@example.com').first()
         if not default_user:
+            # Hash the default password properly
+            import bcrypt
+            hashed_password = bcrypt.hashpw('default123'.encode('utf-8'), bcrypt.gensalt())
             default_user = User(
                 name='Default User',
                 email='default@example.com',
-                password='default',
+                password=hashed_password.decode('utf-8'),
                 role='user'
             )
             db.session.add(default_user)
@@ -225,6 +243,7 @@ with app.app_context():
             print("Default user already exists")
     except Exception as e:
         print(f"Error creating default user: {e}")
+        print("Continuing without default user - users can register normally")
 
 print("Flask app initialization completed successfully!")
 
